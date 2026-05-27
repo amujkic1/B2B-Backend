@@ -33,3 +33,6 @@ build/
 .vscode/
 
 .idea/
+
+/server/src/main/resources/application.properties
+**/application.properties
