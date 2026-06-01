@@ -4,6 +4,7 @@ import com.example.demo.dto.InterviewQuestionSet;
 import com.example.demo.models.JobTarget;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +16,7 @@ public class InterviewQuestionService {
         this.chatClient = ChatClient.create(chatModel);
     }
 
+    @Cacheable(value = "interview-questions", key = "#jobTarget.id")
     public InterviewQuestionSet generateQuestions(JobTarget jobTarget) {
 
         try {

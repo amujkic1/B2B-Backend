@@ -6,6 +6,7 @@ import org.apache.tika.Tika;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -19,6 +20,7 @@ public class AiEvaluationService {
         this.chatClient = ChatClient.create(chatModel);
     }
 
+    @Cacheable(value = "resume-grades", key = "#resumeUrl.hashCode() + '_' + #jobTarget.id")
     public ResumeGradeReport gradeResume(String resumeUrl, JobTarget jobTarget) {
         try {
             InputStream inputStream = new URL(resumeUrl).openStream();

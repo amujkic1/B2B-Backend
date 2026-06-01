@@ -1,5 +1,6 @@
 package com.example.demo.dto;
 
+import java.io.Serializable;
 import java.util.List;
 
 public record ResumeGradeReport(
@@ -8,4 +9,6 @@ public record ResumeGradeReport(
         List<String> matchedSkills,
         List<String> criticalGaps,
         List<String> actionableImprovements
-) {}
+) implements Serializable {
+    private static final long serialVersionUID = 1L;
+}
