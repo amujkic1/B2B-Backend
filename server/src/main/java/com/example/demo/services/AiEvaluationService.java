@@ -4,7 +4,7 @@ import com.example.demo.dto.ResumeGradeReport;
 import com.example.demo.models.JobTarget;
 import org.apache.tika.Tika;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel; // Add this import
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Service;
 import java.io.InputStream;
 import java.net.URL;

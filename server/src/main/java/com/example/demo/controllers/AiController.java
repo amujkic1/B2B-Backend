@@ -1,8 +1,10 @@
 package com.example.demo.controllers;
 
+import com.example.demo.dto.InterviewQuestionSet;
 import com.example.demo.dto.JobScrapeRequest;
 import com.example.demo.dto.ResumeGradeReport;
 import com.example.demo.dto.ScrapedJobResponse;
+import com.example.demo.services.InterviewQuestionService;
 import com.example.demo.services.JobScrapingService;
 import com.example.demo.services.AiEvaluationService;
 import com.example.demo.repositories.JobTargetRepository;
@@ -21,13 +23,15 @@ public class AiController {
     private final AiEvaluationService aiEvaluationService;
     private final JobTargetRepository jobTargetRepository;
     private final UserRepository userRepository;
+    private final InterviewQuestionService interviewQuestionService;
 
     public AiController(JobScrapingService scrapingService, AiEvaluationService evaluationService,
-                        JobTargetRepository jobTargetRepository, UserRepository userRepository) {
+                        JobTargetRepository jobTargetRepository, UserRepository userRepository, InterviewQuestionService interviewQuestionService) {
         this.jobScrapingService = scrapingService;
         this.aiEvaluationService = evaluationService;
         this.jobTargetRepository = jobTargetRepository;
         this.userRepository = userRepository;
+        this.interviewQuestionService = interviewQuestionService;
     }
 
     @PostMapping("/scrape")
@@ -50,5 +54,20 @@ public class AiController {
 
         ResumeGradeReport report = aiEvaluationService.gradeResume(user.getResumeUrl(), jobTarget);
         return ResponseEntity.ok(report);
+    }
+
+    @PostMapping("/interview-questions/{jobId}")
+    public ResponseEntity<InterviewQuestionSet> generateInterviewQuestions(
+            @PathVariable Long jobId,
+            Principal principal
+    ) {
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        JobTarget jobTarget = jobTargetRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job Profile target not found"));
+
+        InterviewQuestionSet questionSet = interviewQuestionService.generateQuestions(jobTarget);
+        return ResponseEntity.ok(questionSet);
     }
 }
