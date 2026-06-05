@@ -4,6 +4,7 @@ import com.example.demo.dto.InterviewQuestionSet;
 import com.example.demo.dto.JobScrapeRequest;
 import com.example.demo.dto.ResumeGradeReport;
 import com.example.demo.dto.ScrapedJobResponse;
+import com.example.demo.models.ResumeAnalysisJob;
 import com.example.demo.services.InterviewQuestionService;
 import com.example.demo.services.JobScrapingService;
 import com.example.demo.services.AiEvaluationService;
@@ -11,6 +12,7 @@ import com.example.demo.repositories.JobTargetRepository;
 import com.example.demo.models.JobTarget;
 import com.example.demo.models.User;
 import com.example.demo.repositories.UserRepository;
+import com.example.demo.services.ResumeAnalysisService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
@@ -24,14 +26,16 @@ public class AiController {
     private final JobTargetRepository jobTargetRepository;
     private final UserRepository userRepository;
     private final InterviewQuestionService interviewQuestionService;
+    private final ResumeAnalysisService resumeAnalysisService;
 
     public AiController(JobScrapingService scrapingService, AiEvaluationService evaluationService,
-                        JobTargetRepository jobTargetRepository, UserRepository userRepository, InterviewQuestionService interviewQuestionService) {
+                        JobTargetRepository jobTargetRepository, UserRepository userRepository, InterviewQuestionService interviewQuestionService, ResumeAnalysisService resumeAnalysisService) {
         this.jobScrapingService = scrapingService;
         this.aiEvaluationService = evaluationService;
         this.jobTargetRepository = jobTargetRepository;
         this.userRepository = userRepository;
         this.interviewQuestionService = interviewQuestionService;
+        this.resumeAnalysisService = resumeAnalysisService;
     }
 
     @PostMapping("/scrape")
@@ -69,5 +73,17 @@ public class AiController {
 
         InterviewQuestionSet questionSet = interviewQuestionService.generateQuestions(jobTarget);
         return ResponseEntity.ok(questionSet);
+    }
+
+    @PostMapping("/grade/{jobId}/async")
+    public ResponseEntity<?> gradeUserResumeAsync(@PathVariable Long jobId, Principal principal) {
+        ResumeAnalysisJob job = resumeAnalysisService.startAnalysis(principal.getName(), jobId);
+        return ResponseEntity.accepted().body(job);
+    }
+
+    @GetMapping("/grade/result/{analysisId}")
+    public ResponseEntity<?> getAnalysisResult(@PathVariable Long analysisId, Principal principal) {
+        ResumeAnalysisJob job = resumeAnalysisService.getAnalysis(analysisId, principal.getName());
+        return ResponseEntity.ok(job);
     }
 }
