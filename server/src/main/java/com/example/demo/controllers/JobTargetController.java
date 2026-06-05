@@ -8,13 +8,12 @@ import com.example.demo.repositories.JobTargetRepository;
 import com.example.demo.repositories.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
+@RestController
 public class JobTargetController {
 
     private final JobTargetRepository jobTargetRepository;
@@ -25,6 +24,16 @@ public class JobTargetController {
         this.jobTargetRepository = jobTargetRepository;
         this.userRepository = userRepository;
         this.jobTargetMapper = jobTargetMapper;
+    }
+
+    @GetMapping("/targets")
+    public ResponseEntity<List<JobTarget>> getAllJobTargets(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<JobTarget> jobTargets = jobTargetRepository.findAllByUserId(user.getId());
+        return ResponseEntity.ok(jobTargets);
+
     }
 
     @PostMapping("/targets")
