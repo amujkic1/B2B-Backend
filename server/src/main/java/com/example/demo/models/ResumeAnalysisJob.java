@@ -30,8 +30,8 @@ public class ResumeAnalysisJob {
     @Column(nullable = false)
     private ResumeAnalysisStatus status = ResumeAnalysisStatus.QUEUED;
 
-    @Column(columnDefinition = "TEXT")
-    private String reportJson;
+    @OneToOne(mappedBy = "analysisJob", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ResumeGradeResult result;
 
     @Column(columnDefinition = "TEXT")
     private String errorMessage;

@@ -1,9 +1,7 @@
 package com.example.demo.controllers;
 
-import com.example.demo.dto.InterviewQuestionSet;
-import com.example.demo.dto.JobScrapeRequest;
-import com.example.demo.dto.ResumeGradeReport;
-import com.example.demo.dto.ScrapedJobResponse;
+import com.example.demo.dto.*;
+import com.example.demo.mapper.ResumeAnalysisMapper;
 import com.example.demo.models.ResumeAnalysisJob;
 import com.example.demo.services.InterviewQuestionService;
 import com.example.demo.services.JobScrapingService;
@@ -27,15 +25,20 @@ public class AiController {
     private final UserRepository userRepository;
     private final InterviewQuestionService interviewQuestionService;
     private final ResumeAnalysisService resumeAnalysisService;
+    private final ResumeAnalysisMapper resumeAnalysisMapper;
 
     public AiController(JobScrapingService scrapingService, AiEvaluationService evaluationService,
-                        JobTargetRepository jobTargetRepository, UserRepository userRepository, InterviewQuestionService interviewQuestionService, ResumeAnalysisService resumeAnalysisService) {
+                        JobTargetRepository jobTargetRepository, UserRepository userRepository,
+                        InterviewQuestionService interviewQuestionService,
+                        ResumeAnalysisService resumeAnalysisService,
+                        ResumeAnalysisMapper resumeAnalysisMapper) {
         this.jobScrapingService = scrapingService;
         this.aiEvaluationService = evaluationService;
         this.jobTargetRepository = jobTargetRepository;
         this.userRepository = userRepository;
         this.interviewQuestionService = interviewQuestionService;
         this.resumeAnalysisService = resumeAnalysisService;
+        this.resumeAnalysisMapper = resumeAnalysisMapper;
     }
 
     @PostMapping("/scrape")
@@ -76,14 +79,14 @@ public class AiController {
     }
 
     @PostMapping("/grade/{jobId}/async")
-    public ResponseEntity<?> gradeUserResumeAsync(@PathVariable Long jobId, Principal principal) {
+    public ResponseEntity<ResumeAnalysisResponse> gradeUserResumeAsync(@PathVariable Long jobId, Principal principal) {
         ResumeAnalysisJob job = resumeAnalysisService.startAnalysis(principal.getName(), jobId);
-        return ResponseEntity.accepted().body(job);
+        return ResponseEntity.accepted().body(resumeAnalysisMapper.toResponse(job));
     }
 
     @GetMapping("/grade/result/{analysisId}")
-    public ResponseEntity<?> getAnalysisResult(@PathVariable Long analysisId, Principal principal) {
+    public ResponseEntity<ResumeAnalysisResponse> getAnalysisResult(@PathVariable Long analysisId, Principal principal) {
         ResumeAnalysisJob job = resumeAnalysisService.getAnalysis(analysisId, principal.getName());
-        return ResponseEntity.ok(job);
+        return ResponseEntity.ok(resumeAnalysisMapper.toResponse(job));
     }
 }
